@@ -30,7 +30,7 @@ namespace CodeListener
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
             // TODO: remember to change to versions every time publish a new one!!
-            RhinoApp.WriteLine("CodeListener Version: 0.1.4");
+            RhinoApp.WriteLine("CodeListener Version: 0.1.6");
             return Result.Success;
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,8 @@ using Rhino.Geometry;
 using System.Runtime.Serialization.Json;
 using System.Text.RegularExpressions;
 using System.Windows;
+using Rhino.Display;
+using Rhino.DocObjects;
 using Rhino.Runtime;
 
 
@@ -21,7 +24,7 @@ namespace CodeListener
     {
         internal static BackgroundWorker _tcpServerWorker;
         private RhinoDoc _idoc;
-        private TcpListener _server;
+        internal static TcpListener _server;
         private Application _app;
 
         public CodeListenerCommand()
@@ -62,6 +65,7 @@ namespace CodeListener
 
             // Start the worker thread
             _tcpServerWorker = new BackgroundWorker();
+            _tcpServerWorker.WorkerSupportsCancellation = true;
             _tcpServerWorker.DoWork += TcpServerWorkerListening;
             _tcpServerWorker.RunWorkerCompleted += TcpServerWorkerRunTcpServerWorkerCompleted;
             _tcpServerWorker.RunWorkerAsync();
@@ -98,7 +102,15 @@ namespace CodeListener
             while (true)
             {
                 // incoming client connected
-                TcpClient client = _server.AcceptTcpClient();
+                TcpClient client;
+                try
+                {
+                    client = _server.AcceptTcpClient();
+                }
+                catch (Exception serverException)
+                {
+                    return;
+                }
 
                 // get the incoming data through a network stream
                 NetworkStream nwStream = client.GetStream();
@@ -170,6 +182,7 @@ namespace CodeListener
                     if (msgObj.run)
                     {
                         uint sn = _idoc.BeginUndoRecord("VS Code execution");
+                        var sn_start = RhinoObject.NextRuntimeSerialNumber;
                         try
                         {
                             if (msgObj.minimize) Utils.MinimizeVSCodeWindow();
@@ -191,6 +204,22 @@ namespace CodeListener
                             if (msgObj.minimize) Utils.RestoreVSCodeWindow();
                             // fix the rs.Prompt bug
                             RhinoApp.SetCommandPrompt("Command");
+
+                            // select created objects
+                            var sn_end = RhinoObject.NextRuntimeSerialNumber;
+                            if (sn_end > sn_start)
+                            {
+                                for (var i = sn_start; i < sn_end; i++)
+                                {
+                                    var obj = _idoc.Objects.Find(i);
+                                    if (null != obj)
+                                    {
+                                        obj.Select(true);
+                                    }
+                                }
+                            }
+                            // enable the view
+                            _idoc.Views.RedrawEnabled = true;
                         }
                     }
                     else
