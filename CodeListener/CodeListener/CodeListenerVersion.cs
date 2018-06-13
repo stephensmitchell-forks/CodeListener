@@ -10,6 +10,10 @@ namespace CodeListener
     [System.Runtime.InteropServices.Guid("56773c6e-b5d1-462f-af01-43bed492ef53")]
     public class CodeListenerVersion : Command
     {
+        internal static int MAJOR = 0;
+        internal static int MINOR = 1;
+        internal static int PATCH = 5;
+        static string Version = $"{MAJOR}.{MINOR}.{PATCH}";
         static CodeListenerVersion _instance;
         public CodeListenerVersion()
         {
@@ -30,7 +34,7 @@ namespace CodeListener
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
             // TODO: remember to change to versions every time publish a new one!!
-            RhinoApp.WriteLine("CodeListener Version: 0.1.6");
+            RhinoApp.WriteLine($"CodeListener Version: {Version}");
             return Result.Success;
         }
 

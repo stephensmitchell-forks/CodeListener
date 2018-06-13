@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Text;
@@ -50,6 +52,7 @@ namespace CodeListener
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
             _idoc = doc;
+            CheckLatestVersion();
             // Start WPF UI Dispatcher if not running.
             if (_app == null)
             {
@@ -256,6 +259,43 @@ namespace CodeListener
         protected void CloseConnection(NetworkStream stream)
         {
             stream.Close();
+        }
+
+        // check plugin versions
+        protected async void CheckLatestVersion()
+        {
+            // hardcoded github latest releases
+            string sURL = "https://api.github.com/repos/ccc159/CodeListener/releases/latest";
+            string pageURL = "https://github.com/ccc159/CodeListener/releases/latest";
+            var client = new HttpClient();
+            ServicePointManager.SecurityProtocol =
+                SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+            client.DefaultRequestHeaders.Add("User-Agent", "CodeListener");
+            try
+            {
+                var uri = new Uri(sURL);
+                Stream respStream = await client.GetStreamAsync(uri);
+                StreamReader reader = new StreamReader(respStream);
+                string responseFromServer = reader.ReadToEnd();
+                var index = responseFromServer.IndexOf("tag_name", StringComparison.Ordinal);
+                var version = (responseFromServer.Substring(index + 11, 10).Split('\"')[0]).Split('.');
+                // version Major.Minor.Patch -> 0.1.5
+                int major = Int32.Parse(version[0]);
+                int minor = Int32.Parse(version[1]);
+                int patch = Int32.Parse(version[2]);
+                if (CodeListenerVersion.MAJOR < major || CodeListenerVersion.MINOR < minor ||
+                    CodeListenerVersion.PATCH < patch)
+                {
+                    var msg = $"CodeListener has new a version {major}.{minor}.{patch}! Go to download page?";
+                    var result = MessageBox.Show(msg, "New Version", MessageBoxButton.OKCancel,
+                        MessageBoxImage.Information);
+                    if (result == MessageBoxResult.OK) System.Diagnostics.Process.Start(pageURL);
+                }
+            }
+            catch (Exception ex)
+            {
+                RhinoApp.WriteLine("Check new version failed.");
+            }
         }
     }
 

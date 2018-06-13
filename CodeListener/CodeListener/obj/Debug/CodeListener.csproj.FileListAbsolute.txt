@@ -29,3 +29,7 @@ C:\tmp\CodeListener\CodeListener\CodeListener\obj\Debug\CodeListener.pdb
 C:\Projects\CodeListener\CodeListener\CodeListener\bin\RhinoPythonHost.dll
 C:\Projects\CodeListener\CodeListener\CodeListener\bin\RhinoPythonHost.pdb
 C:\Projects\CodeListener\CodeListener\CodeListener\obj\Debug\CodeListener.csprojResolveAssemblyReference.cache
+C:\Projects\CodeListener\CodeListener\CodeListener\bin\Newtonsoft.Json.dll
+C:\Projects\CodeListener\CodeListener\CodeListener\bin\System.Net.Http.Formatting.dll
+C:\Projects\CodeListener\CodeListener\CodeListener\bin\Newtonsoft.Json.xml
+C:\Projects\CodeListener\CodeListener\CodeListener\bin\System.Net.Http.Formatting.xml
